@@ -74,3 +74,6 @@ uploads/
 # *.wmv
 # *.flv
 # *.webm
+
+# FFmpeg binaries (too large for git)
+ffmpeg/

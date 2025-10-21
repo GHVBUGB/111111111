@@ -83,12 +83,17 @@ class XunfeiASRService:
             import subprocess
             
             # 设置ffmpeg和ffprobe路径
-            ffmpeg_path = r"C:\ffmpeg\bin\ffmpeg.exe"
-            ffprobe_path = r"C:\ffmpeg\bin\ffprobe.exe"
+            if os.name == 'nt':  # Windows
+                ffmpeg_path = "./ffmpeg/ffmpeg.exe"
+                ffprobe_path = "./ffmpeg/ffprobe.exe"
+            else:
+                # Linux/Mac 系统，尝试从环境变量或系统路径获取
+                ffmpeg_path = os.getenv('FFMPEG_PATH', 'ffmpeg')
+                ffprobe_path = os.getenv('FFPROBE_PATH', 'ffprobe')
             
-            if not os.path.exists(ffmpeg_path):
+            if not os.path.exists(ffmpeg_path) and os.name == 'nt':
                 ffmpeg_path = "ffmpeg"
-            if not os.path.exists(ffprobe_path):
+            if not os.path.exists(ffprobe_path) and os.name == 'nt':
                 ffprobe_path = "ffprobe"
             
             # 获取音频总时长

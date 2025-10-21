@@ -12,7 +12,7 @@ def _ffmpeg_path() -> str:
         return get_ffmpeg_path()
     except Exception:
         import shutil
-        return os.getenv("FFMPEG_PATH") or shutil.which("ffmpeg") or r"C:\\ffmpeg\\bin\\ffmpeg.exe"
+        return os.getenv("FFMPEG_PATH") or shutil.which("ffmpeg") or "./ffmpeg/ffmpeg.exe"
 
 
 def _build_vf(brightness: float, contrast: float, saturation: float, gamma: float, sharpness: float, denoise: float) -> str:
