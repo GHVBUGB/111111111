@@ -13,7 +13,7 @@ def get_ffmpeg_path() -> str:
     detected = shutil.which("ffmpeg")
     if detected:
         return detected
-    win_default = r"C:\\ffmpeg\\bin\\ffmpeg.exe"
+    win_default = "./ffmpeg/ffmpeg.exe"
     return win_default if os.path.exists(win_default) else "ffmpeg"
 
 

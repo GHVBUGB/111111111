@@ -201,19 +201,38 @@ class VideoProcessorService:
                                 # 讯飞ASR服务：先提取音频，然后转录
                                 import subprocess
                                 
+                                # 获取FFmpeg路径
+                                ffmpeg_path = os.getenv('FFMPEG_PATH', './ffmpeg/ffmpeg.exe')
+                                
                                 # 从视频中提取音频
                                 audio_path = final_output_path.replace('.mp4', '_audio.wav')
-                                subprocess.run([
-                                    'ffmpeg', '-i', final_output_path, '-vn', '-acodec', 'pcm_s16le',
-                                    '-ar', '16000', '-ac', '1', '-y', audio_path
-                                ], check=True, capture_output=True)
+                                logger.info(f"[{job_id}] 开始提取音频: {final_output_path} -> {audio_path}")
+                                
+                                try:
+                                    result = subprocess.run([
+                                        ffmpeg_path, '-i', final_output_path, '-vn', '-acodec', 'pcm_s16le',
+                                        '-ar', '16000', '-ac', '1', '-y', audio_path
+                                    ], check=True, capture_output=True, text=True)
+                                    logger.info(f"[{job_id}] 音频提取成功")
+                                except subprocess.CalledProcessError as e:
+                                    logger.error(f"[{job_id}] 音频提取失败: {e.stderr}")
+                                    raise Exception(f"音频提取失败: {e.stderr}")
+                                
+                                # 检查音频文件是否存在
+                                if not os.path.exists(audio_path):
+                                    logger.error(f"[{job_id}] 音频文件不存在: {audio_path}")
+                                    raise Exception("音频文件提取失败")
+                                
+                                logger.info(f"[{job_id}] 开始语音识别，音频文件大小: {os.path.getsize(audio_path)} bytes")
                                 
                                 # 使用讯飞ASR转录音频
                                 segments = self.speech_service.transcribe_audio(audio_path)
+                                logger.info(f"[{job_id}] 语音识别完成，获得 {len(segments) if segments else 0} 个片段")
                                 
                                 # 清理临时音频文件
                                 if os.path.exists(audio_path):
                                     os.remove(audio_path)
+                                    logger.info(f"[{job_id}] 临时音频文件已清理")
                                 
                                 # 转换为标准格式
                                 transcript_result = {
@@ -221,6 +240,7 @@ class VideoProcessorService:
                                     "segments": [{"text": seg["text"], "start": seg["start_time"], "end": seg["end_time"]} 
                                                for seg in segments] if segments else []
                                 }
+                                logger.info(f"[{job_id}] 转录结果转换完成，segments数量: {len(transcript_result['segments'])}")
                             else:
                                 # 腾讯云ASR服务：使用原有接口
                                 transcript_result = await self.speech_service.transcribe_video(final_output_path, language_hint or "zh-CN")
@@ -392,10 +412,7 @@ class VideoProcessorService:
             output_path = f"{base_name}_with_subtitles.mp4"
             
             # 获取FFmpeg路径
-            ffmpeg_path = os.getenv('FFMPEG_PATH', 'ffmpeg')
-            if ffmpeg_path == 'ffmpeg':
-                # 如果是默认值，尝试使用完整路径
-                ffmpeg_path = r'C:\ffmpeg\bin\ffmpeg.exe'
+            ffmpeg_path = os.getenv('FFMPEG_PATH', './ffmpeg/ffmpeg.exe')
             
             # 转换为相对路径以避免Windows路径问题
             try:

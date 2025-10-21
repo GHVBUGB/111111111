@@ -8,7 +8,7 @@ from app.utils.subtitle_burner import burn_subtitles
 
 
 def _get_ffmpeg() -> str:
-    return os.getenv("FFMPEG_PATH") or shutil.which("ffmpeg") or r"C:\\ffmpeg\\bin\\ffmpeg.exe"
+    return os.getenv("FFMPEG_PATH") or shutil.which("ffmpeg") or "./ffmpeg/ffmpeg.exe"
 
 
 def composite_with_background_local(input_video: str, background_image: str, output_video: str, size: Optional[str] = None) -> Dict:
